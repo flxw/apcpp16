@@ -1,0 +1,7 @@
+*.so
+*.zip
+*.o
+*.asm
+*.ii
+*.s
+.vscode/

@@ -1,0 +1,41 @@
+email@[123.123.123.123]
+fake-email.com
+@example.com
+1234567890@example.com
+email@example.museum
+very."(),:;<>[]".VERY."very@\\ "very".unusual@strange.example.com
+email@example..com
+Abc..123@example.com
+firstname.lastname@example.com
+just"not"right@example.com
+"email"@example.com
+email@subdomain.example.com
+firstname-lastname@example.com
+email@example.name
+plainaddress
+email.@example.com
+email..email@example.com
+"(),:;<>[\]@example.com
+email@example.com (Joe Smith)
+this\ is"really"not\allowed@example.com
+plattner@hpi.de
+Joe Smith <email@example.com>
+email@example
+email@example-one.com
+#@%^%#$@#$@#.com
+firstname+lastname@example.com
+email.example.com
+.email@example.com
+あいうえお@example.com
+email@111.222.333.44444
+_______@example.com
+email@example.web
+email@-example.com
+email@123.123.123.123
+very.unusual."@".unusual.com@example.com
+email@example.com
+email@example@example.com
+much."more\ unusual"@example.com
+email@example.co.jp
+Frank.Ritter@frankritter.berlin
+paige@google.com

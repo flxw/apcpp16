@@ -1,0 +1,2 @@
+g++ -fPIC -shared provider.cpp -o libprovider.so
+g++ -I. -L. -Wl,-rpath,.  -lprovider providerlibtest.cpp -o providerlibtest

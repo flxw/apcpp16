@@ -1,0 +1,8 @@
+Die Hauptcharaktere Arthur Dent, Ford Perfect,
+Zaphod Beeblebrox, Trillian, und Marvin The Paranoid Android
+tauchen in dem Textschnipsel auf.
+
+  347 arthur
+  326 ford
+  214 zaphod
+   79 trillian
