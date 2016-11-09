@@ -114,29 +114,32 @@ FileContent readBinary(const std::string & filename, bool skipHeader) {
         inputFile.read(&key[0], typeIdAndKeyLength);
 
         switch(typeId) {
-            case 0: // bool
+            case 0: {// bool
                 bool c;
-                inputFile.read((char*)&c, sizeof(bool));
+                inputFile.read((char *) &c, sizeof(bool));
                 headi.push_back(make_pair(key, c));
                 break;
-            case 1: // int
+            }
+            case 1: {// int
                 int i;
-                inputFile.read((char*)&i, sizeof(int));
+                inputFile.read((char *) &i, sizeof(int));
                 headi.push_back(make_pair(key, i));
                 break;
-            case 2: // float
+            }
+            case 2: {// float
                 float f;
-                inputFile.read((char*)&f, sizeof(float));
+                inputFile.read((char *) &f, sizeof(float));
                 headi.push_back(make_pair(key, f));
                 break;
+            }
             case 3: {// string
                 unsigned int sz;
                 inputFile.read((char *) &sz, sizeof(unsigned int));
                 string s(sz, ' ');
                 inputFile.read(&s[0], sz);
                 headi.push_back(make_pair(key, s));
-                }
                 break;
+            }
 
             default: break;
         }

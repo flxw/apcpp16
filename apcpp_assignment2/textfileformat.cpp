@@ -47,9 +47,8 @@ FileContent readText(const std::string & filename, bool skipHeader) {
     fstream inputFile(filename);
     FileContent::Header headi;
 
-    regex booleanRegex{"^(true|false)$"};
-    regex integerRegex{"^[+-]{0,1}[0-9]+$"};
-    regex floatRegex{"^(([0-9]+(\\.[0-9]{0,}){0,1}e[+-][0-9]+)|([+-]{0,1}[0-9]+\\.[0-9]+))$"};
+    regex integerRegex{"^[+-]{0,1}[0-9]+$", regex::optimize};
+    regex floatRegex{"^(([0-9]+(\\.[0-9]{0,}){0,1}e[+-][0-9]+)|([+-]{0,1}[0-9]+\\.[0-9]+))$", regex::optimize};
 
     // read header first
     if (skipHeader) {
@@ -65,26 +64,32 @@ FileContent readText(const std::string & filename, bool skipHeader) {
             // make type distinction
             auto readValueString = line.substr(index+1);
 
-            if (regex_match(readValueString, booleanRegex)) {
-                headi.push_back(std::make_pair(
-                        line.substr(0, index),
-                        (readValueString.compare("true") == 0 ? true : false)
-                ));
-            } else if (regex_match(readValueString, integerRegex)) {
-                headi.push_back(std::make_pair(
-                        line.substr(0, index),
-                        stoi(readValueString)
-                ));
-            } else if (regex_match(readValueString, floatRegex)) {
-                headi.push_back(std::make_pair(
-                        line.substr(0, index),
-                        stof(readValueString)
-                ));
-            } else {
+            // identify string from quote delimiters
+            if (readValueString[0] == '"') {
                 headi.push_back(std::make_pair(
                         line.substr(0, index),
                         readValueString.substr(1, readValueString.size() - 2)
                 ));
+            } else {
+                bool isValueTrue  = readValueString.compare("true") == 0;
+                bool isValueFalse = readValueString.compare("false") == 0;
+
+                if (isValueFalse || isValueTrue) {
+                    headi.push_back(std::make_pair(
+                            line.substr(0, index),
+                            isValueTrue
+                    ));
+                } else if (regex_match(readValueString, integerRegex)) {
+                    headi.push_back(std::make_pair(
+                            line.substr(0, index),
+                            stoi(readValueString)
+                    ));
+                } else if (regex_match(readValueString, floatRegex)) {
+                    headi.push_back(std::make_pair(
+                            line.substr(0, index),
+                            stof(readValueString)
+                    ));
+                }
             }
         }
     }
