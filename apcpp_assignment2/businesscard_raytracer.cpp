@@ -38,109 +38,161 @@ struct Vector3D {
 // reuse the vector class to store colors
 typedef Vector3D Color;
 
-// void initScene(std::vector<std::string>& strScene, std::vector<int>& intScene) {
-void initScene(std::vector<std::string>& strScene, int *intScene) {
-  // for (auto& s : strScene) 
-  for (int i = 0; i < 9; ++i)
+
+class Raytracer 
+{
+public:
+  Raytracer(std::vector<std::string>& strScene) 
   {
-    // intScene.push_back(strtol(s.c_str(), NULL, 2));
-    intScene[8-i] = strtol(strScene[i].c_str(), NULL, 2);
-  }
-}
-
-
-float random01() { return ((float)rand())/RAND_MAX; }
-
-enum TraceResult { sky, ground, sphere };
-
-TraceResult trace(Vector3D origin, Vector3D direction, float& minDist, Vector3D& reflection, int *scene)
-{ 
-  minDist = 1e9;
-  TraceResult res = TraceResult::sky;
-  float p = -origin.z/direction.z;
-  if (.01 < p)
-  {
-    minDist = p;
-    reflection = Vector3D(0,0,1);
-    res = TraceResult::ground;
+    this->initScene(strScene);
   }
 
-  // iterate over columns of scene
-  for (int column = 28; column >= 0; column--)
+  void setCamPosition(Vector3D& pos)
   {
-    // iterate over rows of scene (there are 9)
-    for (int row = 8; row >= 0; row--)
+    camPosition = pos;
+  }
+
+  void setCamDirection(Vector3D& dir)
+  {
+    camDirection = dir;
+  }
+
+  void run()
+  {
+    // ppm header
+    std::cout << "P6 512 512 255 "; 
+
+    Vector3D a = !(Vector3D(0,0,1)^camDirection)*.002;
+    Vector3D b = !(camDirection^a)*.002;
+    Vector3D c = (a + b)*-256 + camDirection;
+
+    for (int y = 512; y--;)
     {
-      // check if there is a sphere in the row/column
-      if (scene[row] & (1 << column))
-      {        
-        Vector3D p = origin + Vector3D(-column,0,-row-4);
-        float b = p%direction;
-        float c = p%p - 1;
-        float q = b*b - c;
-      
-        // check if we hit the sphere
-        if (q > 0)
-        {
-          // yes...
-          float dist = -b - sqrt(q);
-      
-          // if this is a new minimum distance
-          if (dist < minDist && dist > .01)
-          {
-            minDist = dist;
-            reflection = !(p+direction*minDist);
-            res = TraceResult::sphere;
-          }
+      for (int x = 512; x--;)
+      {
+        Color p(13, 13, 13);
+
+        // trace 64 rays
+        for (int r = 64; r--;)
+        {       
+          // some random delta
+          Vector3D t = a*(this->random01() - .5)*99 + b*(this->random01() - .5)*99;
+          // add up the color value for this pixel
+          p = p + this->sample(camPosition + t, !(t*-1 + (a*(this->random01() + x) + b*(y + this->random01()) + c)*16))*3.5;
         }
+        
+        std::cout << (char)(int)p.x << (char)(int)p.y << (char)(int)p.z; 
       }
     }
   }
 
-  return res;
-}
+private:
+  enum TraceResult { sky, ground, sphere };
 
-
-Color sample(Vector3D origin, Vector3D direction, int *scene)
-{
-  float intersectDist;
-  Vector3D reflection;
-
-  TraceResult traceRes = trace(origin, direction, intersectDist, reflection, scene);
-
-  if (traceRes == TraceResult::sky)
+  void initScene(std::vector<std::string>& strScene)
   {
-    // get a magic sky color 
-    return Color(.7, .6, 1)*pow(1-direction.z, 4);
+    for (int i = 0; i < 9; ++i)
+    {
+      intScene[8-i] = strtol(strScene[i].c_str(), NULL, 2);
+    }
   }
 
-  Vector3D intersectPoint = origin + direction*intersectDist;
-  // what are those?
-  Vector3D l = !(Vector3D(9 + random01(), 9 + random01(), 16) + intersectPoint*-1);
-  Vector3D r = direction + reflection*((reflection%direction)*-2);
+  TraceResult trace(Vector3D origin, Vector3D direction, float& minDist, Vector3D& reflection)
+  { 
+    minDist = 1e9;
+    TraceResult res = TraceResult::sky;
+    float p = -origin.z/direction.z;
+    if (.01 < p)
+    {
+      minDist = p;
+      reflection = Vector3D(0,0,1);
+      res = TraceResult::ground;
+    }
 
-  // what is that?
-  float b = l%reflection;
+    // iterate over columns of scene
+    for (int column = 28; column >= 0; column--)
+    {
+      // iterate over rows of scene (there are 9)
+      for (int row = 8; row >= 0; row--)
+      {
+        // check if there is a sphere in the row/column
+        if (intScene[row] & (1 << column))
+        {        
+          Vector3D p = origin + Vector3D(-column,0,-row-4);
+          float b = p%direction;
+          float c = p%p - 1;
+          float q = b*b - c;
+        
+          // check if we hit the sphere
+          if (q > 0)
+          {
+            // yes...
+            float dist = -b - sqrt(q);
+        
+            // if this is a new minimum distance
+            if (dist < minDist && dist > .01)
+            {
+              minDist = dist;
+              reflection = !(p+direction*minDist);
+              res = TraceResult::sphere;
+            }
+          }
+        }
+      }
+    }
 
-  if (b < 0 || TraceResult::sky != trace(intersectPoint, l, intersectDist, reflection, scene))
-  {
-    b = 0;
+    return res;
   }
 
-  float p = pow((l%r)*(b>0 ? 1 : 0), 99);
-
-  if (traceRes == TraceResult::ground)
+  Color sample(Vector3D origin, Vector3D direction)
   {
-    intersectPoint = intersectPoint*.2;
-    Color accentSquare(3, 1, 1);
-    Color mainSquare(3, 3, 3);
+    float intersectDist;
+    Vector3D reflection;
 
-    return (((int)(ceil(intersectPoint.x) + ceil(intersectPoint.y))) % 2 == 0 ? mainSquare : accentSquare)*(b*.2 + .1);
+    TraceResult traceRes = this->trace(origin, direction, intersectDist, reflection);
+
+    if (traceRes == TraceResult::sky)
+    {
+      // get a magic sky color 
+      return Color(.7, .6, 1)*pow(1-direction.z, 4);
+    }
+
+    Vector3D intersectPoint = origin + direction*intersectDist;
+    // what are those?
+    Vector3D l = !(Vector3D(9 + this->random01(), 9 + this->random01(), 16) + intersectPoint*-1);
+    Vector3D r = direction + reflection*((reflection%direction)*-2);
+
+    // what is that?
+    float b = l%reflection;
+
+    if (b < 0 || TraceResult::sky != this->trace(intersectPoint, l, intersectDist, reflection))
+    {
+      b = 0;
+    }
+
+    float p = pow((l%r)*(b>0 ? 1 : 0), 99);
+
+    if (traceRes == TraceResult::ground)
+    {
+      intersectPoint = intersectPoint*.2;
+      Color accentSquare(3, 1, 1);
+      Color mainSquare(3, 3, 3);
+
+      return (((int)(ceil(intersectPoint.x) + ceil(intersectPoint.y))) % 2 == 0 ? mainSquare : accentSquare)*(b*.2 + .1);
+    }
+
+    // we hit a sphere
+    return Color(p, p, p) + this->sample(intersectPoint, r)*.5;
   }
 
-  // we hit a sphere
-  return Color(p, p, p) + sample(intersectPoint, r, scene)*.5;
-}
+  float random01() { return ((float)rand())/RAND_MAX; }
+
+
+  int intScene[9];
+  Vector3D camPosition;
+  Vector3D camDirection;
+};
+
 
 int main()
 {
@@ -156,34 +208,10 @@ int main()
     "10000001110001001001000001"
   };
 
-  int G[9];
-  initScene(scene, G);
-
-  // ppm header
-  std::cout << "P6 512 512 255 "; 
-
-  Vector3D camPosition = Vector3D(17, 32, 12);
-  Vector3D camDirection = !Vector3D(-2, -16, 0);
-  Vector3D a = !(Vector3D(0,0,1)^camDirection)*.002;
-  Vector3D b = !(camDirection^a)*.002;
-  Vector3D c = (a + b)*-256 + camDirection;
-
-  for (int y = 512; y--;)
-  {
-    for (int x = 512; x--;)
-    {
-      Color p(13, 13, 13);
-
-      // trace 64 rays
-      for (int r = 64; r--;)
-      {       
-        // some random delta
-        Vector3D t = a*(random01() - .5)*99 + b*(random01() - .5)*99;
-        // add up the color value for this pixel
-        p = p + sample(camPosition + t, !(t*-1 + (a*(random01() + x) + b*(y + random01()) + c)*16), G)*3.5;
-      }
-      // can we do something about this casting mess?
-      std::cout << (char)(int)p.x << (char)(int)p.y << (char)(int)p.z; 
-    }
-  }
+  Raytracer tracer(scene);
+  Vector3D pos = Vector3D(17, 32, 12);
+  Vector3D dir = !Vector3D(-2, -16, 0);
+  tracer.setCamPosition(pos);
+  tracer.setCamDirection(dir);
+  tracer.run();
 }
