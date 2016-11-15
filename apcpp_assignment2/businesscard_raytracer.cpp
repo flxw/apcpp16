@@ -75,8 +75,8 @@ TraceResult trace(Vector3D origin, Vector3D direction, float& minDist, Vector3D&
     res = TraceResult::ground;
   }
 
-  // iterate over columns of scene (there are 20)
-  for (int column = 28; column >=0; column--)
+  // iterate over columns of scene
+  for (int column = 28; column >= 0; column--)
   {
     // iterate over rows of scene (there are 9)
     for (int row = 8; row >= 0; row--)
