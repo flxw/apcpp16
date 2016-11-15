@@ -1,0 +1,11 @@
+float: 
+- 3.141592
+- sizeof(float) == 4
+
+double:
+- 3.141592653589793
+- sizeof(double) == 8
+
+long double:
+- 3.141592653589793238
+- sizeof(long double) == 16

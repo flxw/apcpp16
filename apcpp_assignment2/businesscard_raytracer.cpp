@@ -1,8 +1,9 @@
 // usage: card > aek.ppm
-// #include <stdlib.h>
 #include <math.h>
-
+#include <string>
+#include <vector>
 #include <iostream>
+#include <cstdlib>
 
 struct Vector3D {
   float x;
@@ -38,21 +39,25 @@ struct Vector3D {
 typedef Vector3D Color;
 
 // the 3d scene ^^
-int G[] = {247570,280596,280600,249748,18578,18577,231184,16,16};
+// aek
+// int G[] = {247570,280596,280600,249748,18578,18577,231184,16,16};
+// felix
+// int G[] = {34017857,34083362,34083348,63934984,34116116,34116130,34017345,37752832,25170432};
+int G[9];
 
-/*
 
-16                    1    
-16                    1    
-231184   111    111   1    
-18577       1  1   1  1   1
-18578       1  1   1  1  1 
-249748   1111  11111  1 1  
-280600  1   1  1      11   
-280596  1   1  1      1 1  
-247570   1111   111   1  1 
 
-*/
+
+// void initScene(std::vector<std::string>& strScene, std::vector<int>& intScene) {
+void initScene(std::vector<std::string>& strScene, int *intScene) {
+  // for (auto& s : strScene) 
+  for (int i = 0; i < 9; ++i)
+  {
+    // intScene.push_back(strtol(s.c_str(), NULL, 2));
+    intScene[8-i] = strtol(strScene[i].c_str(), NULL, 2);
+  }
+}
+
 
 float random01() { return ((float)rand())/RAND_MAX; }
 
@@ -71,7 +76,7 @@ TraceResult trace(Vector3D origin, Vector3D direction, float& minDist, Vector3D&
   }
 
   // iterate over columns of scene (there are 20)
-  for (int column = 19; column >=0; column--)
+  for (int column = 28; column >=0; column--)
   {
     // iterate over rows of scene (there are 9)
     for (int row = 8; row >= 0; row--)
@@ -149,11 +154,25 @@ Color sample(Vector3D origin, Vector3D direction)
 
 int main()
 {
+  std::vector<std::string> scene = {
+    "01100000000001001000000000",
+    "10010000000001000000000000",
+    "10000001110001000001000001",
+    "10000010001001001000100010",
+    "10000010001001001000010100",
+    "11110011111001001000001000",
+    "10000010000001001000010100",
+    "10000010000001001000100010",
+    "10000001110001001001000001"
+  };
+
+  initScene(scene, G);
+
   // ppm header
   std::cout << "P6 512 512 255 "; 
 
-  Vector3D camPosition = Vector3D(17, 32, 8);
-  Vector3D camDirection = !Vector3D(-6, -16, 0);
+  Vector3D camPosition = Vector3D(17, 32, 12);
+  Vector3D camDirection = !Vector3D(-2, -16, 0);
   Vector3D a = !(Vector3D(0,0,1)^camDirection)*.002;
   Vector3D b = !(camDirection^a)*.002;
   Vector3D c = (a + b)*-256 + camDirection;
