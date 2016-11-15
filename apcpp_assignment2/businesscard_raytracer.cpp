@@ -38,16 +38,6 @@ struct Vector3D {
 // reuse the vector class to store colors
 typedef Vector3D Color;
 
-// the 3d scene ^^
-// aek
-// int G[] = {247570,280596,280600,249748,18578,18577,231184,16,16};
-// felix
-// int G[] = {34017857,34083362,34083348,63934984,34116116,34116130,34017345,37752832,25170432};
-int G[9];
-
-
-
-
 // void initScene(std::vector<std::string>& strScene, std::vector<int>& intScene) {
 void initScene(std::vector<std::string>& strScene, int *intScene) {
   // for (auto& s : strScene) 
@@ -63,7 +53,7 @@ float random01() { return ((float)rand())/RAND_MAX; }
 
 enum TraceResult { sky, ground, sphere };
 
-TraceResult trace(Vector3D origin, Vector3D direction, float& minDist, Vector3D& reflection)
+TraceResult trace(Vector3D origin, Vector3D direction, float& minDist, Vector3D& reflection, int *scene)
 { 
   minDist = 1e9;
   TraceResult res = TraceResult::sky;
@@ -82,7 +72,7 @@ TraceResult trace(Vector3D origin, Vector3D direction, float& minDist, Vector3D&
     for (int row = 8; row >= 0; row--)
     {
       // check if there is a sphere in the row/column
-      if (G[row] & (1 << column))
+      if (scene[row] & (1 << column))
       {        
         Vector3D p = origin + Vector3D(-column,0,-row-4);
         float b = p%direction;
@@ -111,12 +101,12 @@ TraceResult trace(Vector3D origin, Vector3D direction, float& minDist, Vector3D&
 }
 
 
-Color sample(Vector3D origin, Vector3D direction)
+Color sample(Vector3D origin, Vector3D direction, int *scene)
 {
   float intersectDist;
   Vector3D reflection;
 
-  TraceResult traceRes = trace(origin, direction, intersectDist, reflection);
+  TraceResult traceRes = trace(origin, direction, intersectDist, reflection, scene);
 
   if (traceRes == TraceResult::sky)
   {
@@ -132,7 +122,7 @@ Color sample(Vector3D origin, Vector3D direction)
   // what is that?
   float b = l%reflection;
 
-  if (b < 0 || TraceResult::sky != trace(intersectPoint, l, intersectDist, reflection))
+  if (b < 0 || TraceResult::sky != trace(intersectPoint, l, intersectDist, reflection, scene))
   {
     b = 0;
   }
@@ -149,7 +139,7 @@ Color sample(Vector3D origin, Vector3D direction)
   }
 
   // we hit a sphere
-  return Color(p, p, p) + sample(intersectPoint, r)*.5;
+  return Color(p, p, p) + sample(intersectPoint, r, scene)*.5;
 }
 
 int main()
@@ -166,6 +156,7 @@ int main()
     "10000001110001001001000001"
   };
 
+  int G[9];
   initScene(scene, G);
 
   // ppm header
@@ -189,7 +180,7 @@ int main()
         // some random delta
         Vector3D t = a*(random01() - .5)*99 + b*(random01() - .5)*99;
         // add up the color value for this pixel
-        p = p + sample(camPosition + t, !(t*-1 + (a*(random01() + x) + b*(y + random01()) + c)*16))*3.5;
+        p = p + sample(camPosition + t, !(t*-1 + (a*(random01() + x) + b*(y + random01()) + c)*16), G)*3.5;
       }
       // can we do something about this casting mess?
       std::cout << (char)(int)p.x << (char)(int)p.y << (char)(int)p.z; 
