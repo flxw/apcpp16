@@ -8,3 +8,4 @@
 .idea
 Makefile
 cmake_install.cmake
+.qmake.stash
