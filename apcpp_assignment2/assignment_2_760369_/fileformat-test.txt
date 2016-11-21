@@ -1,6 +1,0 @@
-Text write: 575 ms
-Text read: 913 ms
-Text correct: yes
-Binary write: 361 ms
-Binary read: 99 ms
-Binary correct: yes
