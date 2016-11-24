@@ -10,49 +10,49 @@
 #include <list>
 
 
-Graph * GraphFactory::createLinearGraph(std::int32_t numVertices, std::int32_t idOffset)
+std::shared_ptr<Graph> GraphFactory::createLinearGraph(std::int32_t numVertices, std::int32_t idOffset)
 {
-    auto graph = new Graph{};
+    auto graph = std::make_shared<Graph>();
     for (auto i = std::int32_t{0}; i < numVertices; ++i)
     {
-        graph->addVertex(new Vertex{i + idOffset});
+        graph->addVertex(std::make_shared<Vertex>(i + idOffset));
     }
     for (auto i = std::int32_t{1}; i < numVertices; ++i)
     {
-        graph->addEdge(new Edge{graph->vertices()[i - 1], graph->vertices()[i], 1});
+        graph->addEdge(std::make_shared<Edge>(graph->vertices()[i - 1], graph->vertices()[i], 1));
     }
     return graph;
 }
 
 
-Graph * GraphFactory::createCircularGraph(std::int32_t numVertices, std::int32_t idOffset)
+std::shared_ptr<Graph> GraphFactory::createCircularGraph(std::int32_t numVertices, std::int32_t idOffset)
 {
     auto graph = createLinearGraph(numVertices, idOffset);
-    graph->addEdge(new Edge{graph->vertices().back(), graph->vertices().front(), 1});
+    graph->addEdge(std::make_shared<Edge>(graph->vertices().back(), graph->vertices().front(), 1));
     return graph;
 }
 
 
-Graph * GraphFactory::createTree(std::int32_t numChildren, std::int32_t idOffset)
+std::shared_ptr<Graph> GraphFactory::createTree(std::int32_t numChildren, std::int32_t idOffset)
 {
-    auto graph = new Graph{};
-    graph->addVertex(new Vertex{idOffset});
+    auto graph = std::make_shared<Graph>();
+    graph->addVertex(std::make_shared<Vertex>(idOffset));
     for (auto i = std::int32_t{0}; i < numChildren; ++i)
     {
-        graph->addVertex(new Vertex{idOffset + i + 1});
-        graph->addEdge(new Edge{graph->vertices().front(), graph->vertices().back(), 1});
+        graph->addVertex(std::make_shared<Vertex>(idOffset + i + 1));
+        graph->addEdge(std::make_shared<Edge>(graph->vertices().front(), graph->vertices().back(), 1));
     }
     return graph;
 }
 
 
-Graph * GraphFactory::createRandomGraph(std::int32_t numVertices, std::int32_t idOffset)
+std::shared_ptr<Graph> GraphFactory::createRandomGraph(std::int32_t numVertices, std::int32_t idOffset)
 {
     // Edge id for the purpose of creating a map/set
     using EdgeId = std::pair<std::int32_t, std::int32_t>;
-    auto makeId = [](Edge * edge) { return std::make_pair(edge->v0()->id(), edge->v1()->id()); };
+    auto makeId = [](std::shared_ptr<Edge> edge) { return std::make_pair(edge->v0()->id(), edge->v1()->id()); };
 
-    auto graph = new Graph{};
+    auto graph = std::make_shared<Graph>();
     auto prng = std::mt19937{42}; // fixed seed
 
     // generate vertices
@@ -66,7 +66,7 @@ Graph * GraphFactory::createRandomGraph(std::int32_t numVertices, std::int32_t i
         } while (vertexIds.find(id) != vertexIds.end());
 
         vertexIds.insert(id);
-        graph->addVertex(new Vertex{id});
+        graph->addVertex(std::make_shared<Vertex>(id));
     }
 
     // generate edges
@@ -79,7 +79,7 @@ Graph * GraphFactory::createRandomGraph(std::int32_t numVertices, std::int32_t i
             const auto & v1 = graph->vertices()[prng() % vertexIdList.size()];
             if (v0 != v1)
             {
-                auto edge = new Edge{ v0, v1, 1 };
+                auto edge = std::make_shared<Edge>(v0, v1, 1);
                 if (edgeSet.find(makeId(edge)) == edgeSet.end())
                 {
                     edgeSet.insert(makeId(edge));
@@ -93,7 +93,7 @@ Graph * GraphFactory::createRandomGraph(std::int32_t numVertices, std::int32_t i
 }
 
 
-Graph * GraphFactory::createCityDistanceGraph()
+std::shared_ptr<Graph> GraphFactory::createCityDistanceGraph()
 {
     static const auto N = std::int32_t{20};
     static const auto weightsTable = std::array<int, N * N>{
@@ -119,7 +119,7 @@ Graph * GraphFactory::createCityDistanceGraph()
         398, 237, 510, 123, 218, 371, 101, 51, 70, 150, 434, 334, 151, 370, 84, 61, 85, 62, 142, -1
     };
 
-    auto graph = new Graph{};
+    auto graph = std::make_shared<Graph>();
 
     //
     // TODO: implement graph generation from weight matrix
