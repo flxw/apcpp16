@@ -9,3 +9,12 @@
 Makefile
 cmake_install.cmake
 .qmake.stash
+
+
+cmake-build-debug/
+ASSIGNMENT3.cbp
+CMakeCache.txt
+CMakeFiles/
+CMakeLists.txt
+particles
+runner
