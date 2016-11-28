@@ -28,7 +28,7 @@ void signalHandler(int signum) {
         case SIGSTOP: cout << "Received SIGSTOP...terminating" << endl; exit(0); break;
         case SIGINT:  handleSIGINT(); break;
         case SIGSEGV: cout << "Received SIGSEGV...terminating" << endl; quick_exit(0); break;
-        case SIGILL:  cout << "Received SIGILL...terminating" << endl; quick_exit(0); break;
+        case SIGILL:  cout << "Received SIGILL...rerouting to exception" << endl; runtime_error("SIGILL recovery..."); break;
         case SIGABRT:  cout << "Received SIGABRT...terminating" << endl; quick_exit(0); break;
         case SIGFPE:  cout << "Received SIGFPE...rerouting to exception" << endl; throw runtime_error("SIGFPE recovery..."); break;
         default: break;
