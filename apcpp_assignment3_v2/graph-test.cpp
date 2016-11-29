@@ -28,6 +28,7 @@ void test()
     g4->merge(g5);
 
     auto g6 = GraphFactory::createCityDistanceGraph();
+    // std::cout << "city size: " << g6->vertices().size() << std::endl;
     auto g7 = g6->minimumSpanningTree();
 
     const auto totalWeight = std::accumulate(g7->edges().cbegin(), g7->edges().cend(), 0, [](const auto & sum, const auto & edge) { return sum + edge->weight();  });

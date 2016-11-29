@@ -4,6 +4,7 @@
 #include <map>
 #include <set>
 #include <iostream>
+#include <queue>
 
 
 
@@ -152,11 +153,64 @@ void Graph::merge(std::shared_ptr<Graph> g2)
 
 std::shared_ptr<Graph> Graph::minimumSpanningTree() const
 {
-    auto mst = std::make_shared<Graph>();
+    // Prim Algorithm
 
-    //
-    // TODO: implement minimum spanning tree computation
-    //
+    auto mst = std::make_shared<Graph>();
+    // vertices to be added
+    std::set<std::int32_t> Q;
+    std::map<std::int32_t, std::shared_ptr<Vertex> > IdToVertex;
+    for (const auto vertex : m_vertices)
+    {
+        Q.insert(vertex->id());
+        IdToVertex[vertex->id()] = vertex;
+    }
+    // cheapest connection edges
+    std::map<std::int32_t, std::shared_ptr<Edge> > E;
+    // costs
+    std::map<std::int32_t, std::int32_t> C;
+    for (const auto vertex : m_vertices)
+    {
+        C[vertex->id()] = INT32_MAX;
+    }
+
+    // main loop
+    while (!Q.empty()) {
+        // find min element using linear search
+        std::int32_t minCost = INT32_MAX;
+        std::int32_t min = 0;
+        for (const auto & el : C)
+        {
+            if (el.second < minCost && Q.find(el.first) != Q.end())
+            {
+                minCost = el.second;
+                min = el.first;
+            }
+        }
+
+        mst->addVertex(IdToVertex[min]);
+        if (E.find(min) != E.end())
+        {
+            mst->addEdge(E[min]);
+        }
+
+        Q.erase(min);
+
+        for (const auto edge : m_edges) 
+        {
+            std::int32_t id0 = edge->v0()->id();
+            std::int32_t id1 = edge->v1()->id();
+            if (id0 == min && IdToVertex[id1] && edge->weight() < C[id1]) 
+            {
+                C[id1] = edge->weight();
+                E[id1] = edge;
+            }
+            if (id1 == min && IdToVertex[id0] && edge->weight() < C[id0]) 
+            {
+                C[id0] = edge->weight();
+                E[id0] = edge;
+            }
+        }        
+    }
 
     return mst;
 }

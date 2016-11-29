@@ -120,10 +120,21 @@ std::shared_ptr<Graph> GraphFactory::createCityDistanceGraph()
     };
 
     auto graph = std::make_shared<Graph>();
+    std::map<int, std::shared_ptr<Vertex> > v;
+    for (int i = 0; i < N; ++i)
+    {
+        auto vertex = std::make_shared<Vertex>(i);
+        v[i] = vertex;
+        graph->addVertex(vertex);
+    }
 
-    //
-    // TODO: implement graph generation from weight matrix
-    //
+    for (int from = 0; from < N; ++from)
+    {
+        for (int to = from+1; to < N; ++to)
+        {
+            graph->addEdge(std::make_shared<Edge>(v[from], v[to], weightsTable[from*N + to]));
+        }
+    }
 
     return graph;
 }
