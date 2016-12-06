@@ -7,7 +7,7 @@
 
 int main(int argc, char const * argv[])
 {
-    while (true)
+   while (true)
     {
         const auto highScore = readHighScore();
         std::cout << "\n\n";
